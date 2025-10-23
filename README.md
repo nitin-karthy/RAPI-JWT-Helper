@@ -9,9 +9,6 @@ A lightweight Java library for generating JWT tokens signed with RSA private key
 - ✅ **JWT Token Generation** - Create JWT tokens signed with RS256 (RSA with SHA-256) algorithm
 - ✅ **P8/PKCS#8 Key Support** - Works with both encrypted and unencrypted private keys in P8 format
 - ✅ **Public Key Fingerprinting** - Generate SHA-256 fingerprints of public keys for verification
-- ✅ **Uber JAR** - All dependencies bundled, ready to use in ReadyAPI
-- ✅ **Zero Configuration** - No external dependencies or setup required in ReadyAPI
-- ✅ **Production Ready** - Comprehensive test coverage and validation
 
 ## Quick Start
 
@@ -136,73 +133,28 @@ def jwt = com.smartbear.JWTHelper.make(
 testRunner.testCase.setPropertyValue("BearerToken", "Bearer ${jwt}")
 ```
 
-### Example 2: API Key Registration with Fingerprint
+### Example 2: Use fingerprint in claims
 
 ```groovy
 // Generate fingerprint for API key registration
 def publicKeyPath = "/path/to/public_key.p8"
 def fingerprint = com.smartbear.JWTHelper.generateFingerprint(publicKeyPath)
 
-// Use fingerprint in API registration request
-def registrationPayload = [
-    username: "test-user",
-    public_key_fingerprint: fingerprint
-]
-
-// Convert to JSON and use in request
-import groovy.json.JsonBuilder
-def json = new JsonBuilder(registrationPayload).toString()
-testRunner.testCase.setPropertyValue("registrationPayload", json)
-```
-
-### Example 3: OAuth 2.0 JWT Bearer Flow
-
-```groovy
-// Generate JWT for OAuth 2.0 JWT Bearer Grant
-def now = System.currentTimeMillis() / 1000
 def claims = [
-    iss: "client-id-12345",
-    sub: "user@example.com",
-    aud: "https://oauth.example.com/token",
-    iat: now,
-    exp: now + 300,  // 5 minutes
-    scope: "read write"
+        sub: context.expand('${#Project#username}'),
+        iss: "readyapi-test",
+        exp: System.currentTimeMillis() / 1000 + 1800,  // 30 minutes
+        public_key_fingerprint: fingerprint
 ]
 
 def jwt = com.smartbear.JWTHelper.make(
-    claims,
-    "/path/to/oauth_private_key.p8",
-    "oauthKeyPassword"
+        claims,
+        context.expand('${#Project#privateKeyPath}'),
+        context.expand('${#Project#privateKeyPassphrase}')
 )
 
-// Use in OAuth token request
-testRunner.testCase.setPropertyValue("client_assertion", jwt)
-testRunner.testCase.setPropertyValue("client_assertion_type", 
-    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-```
-
-### Example 4: Dynamic Claims from Test Data
-
-```groovy
-// Build claims dynamically from test data source
-def testData = testRunner.testCase.getTestStepByName("DataSource")
-def row = testData.currentRow
-
-def claims = [
-    sub: row.userId,
-    email: row.email,
-    role: row.role,
-    department: row.department,
-    exp: System.currentTimeMillis() / 1000 + 7200  // 2 hours
-]
-
-def jwt = com.smartbear.JWTHelper.make(
-    claims,
-    context.expand('${#Project#privateKeyPath}'),
-    context.expand('${#Project#privateKeyPassphrase}')
-)
-
-testRunner.testCase.setPropertyValue("userToken", jwt)
+// Set as Authorization header for subsequent requests
+testRunner.testCase.setPropertyValue("BearerToken", "Bearer ${jwt}")
 ```
 
 ## Generating Keys for Testing
@@ -232,39 +184,6 @@ openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
 openssl pkey -in private_key_unencrypted.p8 -pubout -out public_key.p8
 ```
 
-## Project Structure
-
-```
-JWT-Maker/
-├── src/
-│   ├── main/
-│   │   └── java/
-│   │       └── com/smartbear/
-│   │           └── JWTHelper.java          # Main helper class
-│   └── test/
-│       ├── java/
-│       │   └── com/smartbear/
-│       │       └── JWTHelperTest.java      # JUnit tests
-│       └── resources/
-│           ├── test_private_key_encrypted.p8
-│           ├── test_private_key_unencrypted.p8
-│           ├── test_public_key.p8
-│           └── test_public_key_unencrypted.p8
-├── .github/
-│   └── workflows/
-│       └── build.yml                        # CI/CD pipeline
-├── pom.xml                                  # Maven configuration
-└── README.md                                # This file
-```
-
-## Dependencies
-
-This library uses the following open-source dependencies (all bundled in the uber JAR):
-
-- **JJWT v0.13.0** - JWT creation and signing
-- **Bouncy Castle v1.78.1** - Cryptographic operations and key handling
-- **Commons IO v2.20.0** - File I/O utilities
-- **JUnit Jupiter v6.0.0** - Testing framework (test scope only)
 
 ## Building from Source
 
@@ -277,7 +196,7 @@ This library uses the following open-source dependencies (all bundled in the ube
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/JWT-Maker.git
+git clone https://github.com/nitin-karthy/RAPI-JWT-Helper.git
 cd JWT-Maker
 
 # Build the uber JAR
@@ -291,14 +210,6 @@ mvn test
 ```
 
 ## Testing
-
-The project includes comprehensive JUnit tests covering:
-- ✅ JWT generation with encrypted/unencrypted keys
-- ✅ Custom claims handling
-- ✅ Signature verification
-- ✅ Algorithm validation (RS256)
-- ✅ Fingerprint generation and validation
-- ✅ Error handling and edge cases
 
 Run tests with:
 ```bash
@@ -353,23 +264,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For issues, questions, or contributions, please:
-1. Check existing [GitHub Issues](https://github.com/YOUR_USERNAME/JWT-Maker/issues)
-2. Create a new issue with detailed information
-3. Include ReadyAPI version, Java version, and error messages
-
-## Changelog
-
-### v1.0.0 (Current)
-- Initial release
-- JWT generation with RS256 algorithm
-- Support for P8/PKCS#8 encrypted and unencrypted private keys
-- SHA-256 public key fingerprint generation
-- Comprehensive test coverage
-- GitHub Actions CI/CD pipeline
 
 ---
 
