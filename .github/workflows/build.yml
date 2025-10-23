@@ -69,56 +69,56 @@ jobs:
           echo "### Test Results" >> $GITHUB_STEP_SUMMARY
           echo "All tests passed successfully! ✅" >> $GITHUB_STEP_SUMMARY
 
-      - name: Create Release (on master branch only)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.get_version.outputs.version }}-${{ github.run_number }}
-          name: JWT Helper v${{ steps.get_version.outputs.version }} Build ${{ github.run_number }}
-          body: |
-            ## JWT Helper Uber JAR
-            
-            This release contains the uber JAR with all dependencies included.
-            
-            ### Features
-            - ✅ JWT token generation with RS256 algorithm
-            - ✅ Support for encrypted and unencrypted P8 (PKCS#8) private keys
-            - ✅ SHA-256 fingerprint generation for public keys
-            - ✅ All dependencies bundled (ready to use in ReadyAPI)
-            
-            ### Usage
-            Download the JAR and add it to your ReadyAPI project's ext directory.
-            
-            ```groovy
-            // In your Groovy script
-            def claims = [
-                sub: "user123",
-                role: "admin",
-                exp: System.currentTimeMillis() / 1000 + 3600
-            ]
-            
-            def jwt = com.smartbear.JWTHelper.make(
-                claims,
-                "/path/to/private_key.p8",
-                "yourPassphrase"
-            )
-            
-            // Generate fingerprint
-            def fingerprint = com.smartbear.JWTHelper.generateFingerprint(
-                "/path/to/public_key.p8"
-            )
-            ```
-            
-            ### Dependencies
-            - JJWT v0.13.0
-            - Bouncy Castle v1.78.1
-            - Commons IO v2.20.0
-            
-            **Build Date:** $(date)
-            **Commit:** ${{ github.sha }}
-          files: target/*.jar
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Create Release (on master branch only)
+#        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          tag_name: v${{ steps.get_version.outputs.version }}-${{ github.run_number }}
+#          name: JWT Helper v${{ steps.get_version.outputs.version }} Build ${{ github.run_number }}
+#          body: |
+#            ## JWT Helper Uber JAR
+#
+#            This release contains the uber JAR with all dependencies included.
+#
+#            ### Features
+#            - ✅ JWT token generation with RS256 algorithm
+#            - ✅ Support for encrypted and unencrypted P8 (PKCS#8) private keys
+#            - ✅ SHA-256 fingerprint generation for public keys
+#            - ✅ All dependencies bundled (ready to use in ReadyAPI)
+#
+#            ### Usage
+#            Download the JAR and add it to your ReadyAPI project's ext directory.
+#
+#            ```groovy
+#            // In your Groovy script
+#            def claims = [
+#                sub: "user123",
+#                role: "admin",
+#                exp: System.currentTimeMillis() / 1000 + 3600
+#            ]
+#
+#            def jwt = com.smartbear.JWTHelper.make(
+#                claims,
+#                "/path/to/private_key.p8",
+#                "yourPassphrase"
+#            )
+#
+#            // Generate fingerprint
+#            def fingerprint = com.smartbear.JWTHelper.generateFingerprint(
+#                "/path/to/public_key.p8"
+#            )
+#            ```
+#
+#            ### Dependencies
+#            - JJWT v0.13.0
+#            - Bouncy Castle v1.78.1
+#            - Commons IO v2.20.0
+#
+#            **Build Date:** $(date)
+#            **Commit:** ${{ github.sha }}
+#          files: target/*.jar
+#          draft: false
+#          prerelease: false
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
