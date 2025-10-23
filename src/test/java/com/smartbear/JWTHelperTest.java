@@ -54,7 +54,7 @@ class JWTHelperTest {
         // Assert
         assertNotNull(jwt, "JWT token should not be null");
         assertFalse(jwt.isEmpty(), "JWT token should not be empty");
-        assertTrue(jwt.split("\\.").length == 3, "JWT should have 3 parts (header.payload.signature)");
+        assertEquals(3, jwt.split("\\.").length, "JWT should have 3 parts (header.payload.signature)");
 
         // Verify JWT can be parsed and verified with public key
         PublicKey publicKey = loadPublicKey("test_public_key.p8");
@@ -156,7 +156,7 @@ class JWTHelperTest {
     }
 
     @Test
-    void testJWTContainsRS256Algorithm() throws Exception {
+    void testJWTContainsRS256Algorithm() {
         // Arrange
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "algorithmTest");
@@ -219,9 +219,7 @@ class JWTHelperTest {
         claims.put("sub", "testUser");
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            JWTHelper.make(claims, null, encryptedKeyPassphrase);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> JWTHelper.make(claims, null, encryptedKeyPassphrase));
 
         assertTrue(exception.getMessage().contains("Private key path cannot be null or empty"));
 
@@ -236,9 +234,7 @@ class JWTHelperTest {
         String invalidPath = "/non/existent/path/key.p8";
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            JWTHelper.make(claims, invalidPath, encryptedKeyPassphrase);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> JWTHelper.make(claims, invalidPath, encryptedKeyPassphrase));
 
         assertTrue(exception.getMessage().contains("not found") || exception.getMessage().contains("Error generating"));
 
@@ -314,9 +310,7 @@ class JWTHelperTest {
     @Test
     void testFingerprintWithNullPath() {
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            JWTHelper.generateFingerprint(null);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> JWTHelper.generateFingerprint(null));
 
         assertTrue(exception.getMessage().contains("Public key path cannot be null or empty"));
         System.out.println("✅ Null public key path validation works correctly");
@@ -325,9 +319,7 @@ class JWTHelperTest {
     @Test
     void testFingerprintWithInvalidPath() {
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            JWTHelper.generateFingerprint("/non/existent/public_key.p8");
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> JWTHelper.generateFingerprint("/non/existent/public_key.p8"));
 
         assertTrue(exception.getMessage().contains("not found") || exception.getMessage().contains("Error generating"));
         System.out.println("✅ Invalid public key path validation works correctly");

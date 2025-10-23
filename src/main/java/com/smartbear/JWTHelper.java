@@ -14,10 +14,8 @@ import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import java.io.File;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.Security;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -58,13 +56,12 @@ public class JWTHelper {
             PrivateKey privateKey = loadPrivateKey(privateKeyPath, passphrase);
 
             // Build the JWT token
-            String jwt = Jwts.builder()
+
+            return Jwts.builder()
                     .claims(jwtFormat)
                     .issuedAt(new Date())
                     .signWith(privateKey, Jwts.SIG.RS256)
                     .compact();
-
-            return jwt;
 
         } catch (Exception e) {
             throw new RuntimeException("Error generating JWT token: " + e.getMessage(), e);
@@ -121,7 +118,7 @@ public class JWTHelper {
             }
 
             // Return with SHA256: prefix
-            return "SHA256:" + hexString.toString();
+            return "SHA256:" + hexString;
 
         } catch (Exception e) {
             throw new RuntimeException("Error generating fingerprint: " + e.getMessage(), e);
